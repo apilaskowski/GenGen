@@ -1,0 +1,15 @@
+{
+    "GENOME_LENGTH": 10000,
+    "READ_LENGTH": 100,
+    "COVERAGE": 30,
+    "LINE_LENGTH": 120,
+    "ERROR_RATE": 0.001,
+    "IS_REPETITIVE": 1,
+	"REPETITION_LENGTH": [100],
+    "REPETITION_NUMBER": [1],
+    "ORDER_READS": 1,
+    "SUFFIX": ".fasta",
+    "INSERT_SIZE": 200,
+    "PAIRED": 1,
+	"REVCOMP": 1
+}

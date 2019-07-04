@@ -1,0 +1,1 @@
+./generate.py --configuration-file ../configure/data_generator/default.json --genome-file ../data/genome.fasta --reads-file ../data/reads.fasta
