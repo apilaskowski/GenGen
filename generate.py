@@ -8,6 +8,7 @@ import argparse
 import json
 from pprint import pprint
 import sys
+import os
 
 nucleotides = ['A', 'C', 'T', 'G']
 nucleotides_swaps = {
@@ -24,10 +25,16 @@ line_length = 70
 def generate_nucleotide():
     return choice(nucleotides)
 
-def generate_genome(length):
+def generate_genome(length, is_repetitive, repetition_length=[], repetition_number=[]):
     genome = ''
     for _ in range(length):
         genome += generate_nucleotide()
+
+    if is_repetitive:
+        repetition_length = repetition_length
+        repetition_number = repetition_number
+        for idx in range(len(repetition_length)):
+            genome = generate_repetitive_genome(genome, int(repetition_length[idx]), int(repetition_number[idx]))
     return genome
 
 def generate_repetitive_genome(genome, repetition_length, repetition_number):
@@ -70,28 +77,6 @@ def insert_errors(reads, error_rate):
         reads_with_errors.append(read_with_errors)
     return reads_with_errors
 
-def generate_pairs(genome, positions, read_length, insert):
-    paired_reads = []
-    for pos in positions:
-        sign = np.random.choice([-1, 1])
-#        print(pos, "\t", sign, file=sys.stderr, end='\t')
-        if pos + sign * insert + read_length > len(genome) or pos + sign * insert < 0:
-            sign *= -1
-#        print(sign, file=sys.stderr, end='\t')
-        pair_pos = pos + sign * insert
-#        print(pair_pos, file=sys.stderr, end='\t')
-#        print(genome[pair_pos:pair_pos+read_length], file=sys.stderr)
-        paired_reads.append(genome[pair_pos:pair_pos+read_length])
-    return paired_reads
-
-def save_element_to_file(file, id, element):
-    file.write('>' + str(id) + '\n')
-    for i, nucleotide in enumerate(element):
-        file.write(nucleotide)
-        if (i + 1) % line_length == 0:
-            file.write('\n')
-    file.write('\n')
-
 def reverse_complementary_reads(reads):
 	result = []
 	for read in reads:
@@ -100,7 +85,32 @@ def reverse_complementary_reads(reads):
 			new_read += complementary[let]
 		result.append(new_read[::-1])
 	return result
-			
+
+def generate_pairs(genome, positions, read_length, insert):
+    paired_reads = []
+    for pos in positions:
+        sign = np.random.choice([-1, 1])
+        if pos + sign * insert + read_length > len(genome) or pos + sign * insert < 0:
+            sign *= -1
+        pair_pos = pos + sign * insert
+        paired_reads.append(genome[pair_pos:pair_pos+read_length])
+    return paired_reads
+
+def read_genome(genome_file_path, suffix='.fasta'):
+    genome_file = open(genome_file_path + suffix, 'r')
+    genome = ''
+    for line in genome_file:
+        if line[0] != '>':
+            genome += line[:-1]
+    return genome
+
+def save_element_to_file(file, id, element):
+    file.write('>' + str(id) + '\n')
+    for i, nucleotide in enumerate(element):
+        file.write(nucleotide)
+        if (i + 1) % line_length == 0:
+            file.write('\n')
+    file.write('\n')			
 
 def save_genome(genome_file_path, genome, suffix='.fasta'):
     genome_file = open(genome_file_path + suffix, 'w')
@@ -125,13 +135,18 @@ def main():
     global line_length
     line_length = config["LINE_LENGTH"]
 
-    genome = generate_genome(config["GENOME_LENGTH"])
-    is_repetitive = bool(config["IS_REPETITIVE"])
-    if is_repetitive:
-        repetition_length = config["REPETITION_LENGTH"]
-        repetition_number = config["REPETITION_NUMBER"]
-        for idx in range(len(repetition_length)):
-            genome = generate_repetitive_genome(genome, int(repetition_length[idx]), int(repetition_number[idx]))
+    if os.path.isfile(args.genome_file + '.fasta'):
+        print('Read genome')
+
+        genome = read_genome(args.genome_file)
+    else:
+        print('Create genome')
+
+        is_repetitive = bool(config["IS_REPETITIVE"])
+        if is_repetitive:
+            genome = generate_genome(config["GENOME_LENGTH"], is_repetitive, config["REPETITION_LENGHT"], config["REPETITION_NUMBER"])
+        else:
+            genome = generate_genome(config["GENOME_LENGTH"], is_repetitive)
 
     read_number = calc_read_number(config["GENOME_LENGTH"], config["READ_LENGTH"], float(config["COVERAGE"]))
     reads, positions = choice_reads_without_replacement(genome, read_number, config["READ_LENGTH"])

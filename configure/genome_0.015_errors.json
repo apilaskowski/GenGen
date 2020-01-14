@@ -3,13 +3,13 @@
     "READ_LENGTH": 100,
     "COVERAGE": 30,
     "LINE_LENGTH": 120,
-    "ERROR_RATE": 0.001,
-    "IS_REPETITIVE": 1,
-	"REPETITION_LENGTH": [100],
-    "REPETITION_NUMBER": [1],
+    "ERROR_RATE": 0.015,
+    "IS_REPETITIVE": 0,
+	"REPETITION_LENGTH": [],
+    "REPETITION_NUMBER": [],
     "ORDER_READS": 1,
     "SUFFIX": ".fasta",
     "INSERT_SIZE": 200,
-    "PAIRED": 1,
-	"REVCOMP": 1
+    "PAIRED": 0,
+	"REVCOMP": 0
 }
